@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #weather {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button[type="submit"] {
+            padding: 8px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather Report</h1>
+    <div id="weather">
+        <?php
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $apiKey = 'fc6f5dcfd5ef5397c32a14f817d1d216';
+            $city = $_POST["city"];
+            $apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey";
+
+            $weatherData = file_get_contents($apiUrl);
+
+            if ($weatherData === false) {
+                echo "Failed to fetch weather data.";
+            } else {
+                $weatherData = json_decode($weatherData);
+
+                if (isset($weatherData->cod) && $weatherData->cod == "404") {
+                    echo "No city found.";
+                } else {
+                    $weatherDescription = $weatherData->weather[0]->description;
+                    $tempKelvin = $weatherData->main->temp;
+                    $tempCelsius = $tempKelvin - 273.15;
+
+                    echo "<p>Current weather in $city: $weatherDescription</p>";
+                    echo "<p>Temperature: $tempCelsius °C</p>";
+                }
+            }
+        }
+        ?>
+    </div>
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+        <label for="city">Enter City Name:</label>
+        <input type="text" id="city" name="city">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
